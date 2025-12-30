@@ -79,9 +79,9 @@ class BoxService(
             
             Log.d(TAG, "设置系统属性...")
             System.setProperty("sing-box.base-dir", baseDir.absolutePath)
-            System.setProperty("sing-box.working-dir", tempDir.absolutePath)
+            System.setProperty("sing-box.working-dir", workingDir.absolutePath)
             System.setProperty("sing-box.cache-dir", tempDir.absolutePath)
-            System.setProperty("user.dir", tempDir.absolutePath)
+            System.setProperty("user.dir", workingDir.absolutePath)
             
             Log.d(TAG, "调用 Mobile.setup()...")
             try {
@@ -172,30 +172,17 @@ class BoxService(
     }
 
     private fun startCommandServer() {
+        Log.d(TAG, "尝试启动 CommandServer...")
         try {
-            val tempDir = Application.application.cacheDir
-            val socketFile = File(tempDir, "command.sock")
-            
-            if (socketFile.exists()) {
-                Log.d(TAG, "删除旧 socket 文件: ${socketFile.absolutePath}")
-                socketFile.delete()
-            }
-            
-            val originalDir = System.getProperty("user.dir")
-            Log.d(TAG, "原始工作目录: $originalDir")
-            Log.d(TAG, "切换到 cache 目录: ${tempDir.absolutePath}")
-            
-            System.setProperty("user.dir", tempDir.absolutePath)
-            
-            Log.d(TAG, "创建 CommandServer（队列大小: 0）...")
             val commandServer = CommandServer(this, 0)
-            
             commandServer.start()
             this.commandServer = commandServer
-            Log.d(TAG, "✅ CommandServer 启动成功，socket: ${socketFile.absolutePath}")
+            Log.d(TAG, "✅ CommandServer 启动成功")
         } catch (e: Exception) {
             Log.w(TAG, "⚠️ CommandServer 启动失败: ${e.message}")
-            Log.w(TAG, "VPN 可以正常工作，但节点选择功能不可用")
+            Log.i(TAG, "📝 说明：某些设备（如华为/vivo/荣耀）的 SELinux 策略禁止创建 Unix socket")
+            Log.i(TAG, "✅ VPN 核心功能完全正常，将使用默认最优节点")
+            Log.i(TAG, "⚠️ 节点切换功能暂时不可用")
             this.commandServer = null
         }
     }
