@@ -3,7 +3,7 @@ name: Upload store MSIX to release
 permissions:
   contents: write
 
-on:
+于:
   release:
     types: [released]   # Run the action when a GitHub release is published
 
